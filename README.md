@@ -2,7 +2,7 @@
 
 A GitHub Action that blocks pull requests adding accessibility problems to React + [Ant Design](https://ant.design) apps. It catches the antd-specific ones that axe and `eslint-plugin-jsx-a11y` miss, because those tools only see plain JSX elements or rendered DOM.
 
-> Two layers: the **static** action (10 antd rules plus jsx-a11y's recommended set, on changed files) and the **[runtime check](#runtime-check)** sub-action (starts your app, crawls routes with Playwright + axe, and in Next.js apps blames issues on the source line that rendered them). Both report through inline annotations, SARIF for Code Scanning and a sticky PR comment. The theme contrast layer is next; see [Roadmap](#roadmap).
+> Two layers: the **static** action (10 antd rules plus jsx-a11y's recommended set, on changed files) and the **[runtime check](#runtime-check)** sub-action (starts your app, crawls routes with Playwright + axe, and in Next.js apps blames issues on the source line that rendered them). Both report through inline annotations, SARIF for Code Scanning and a sticky PR comment. The static check also runs **[locally through ESLint](#run-it-locally-with-eslint)**, with the same results, so you can catch issues before pushing. The theme contrast layer is next; see [Roadmap](#roadmap).
 
 > **Beta (0.x).** `@v0` is a branch that moves to each 0.x release, so pinning it gets fixes automatically. To stay on one version, pin a release tag (`@v0.10.0`) or a commit SHA. Inputs may still change between minor versions until 1.0, which ships once the baseline file and theme audit land; see [Roadmap](#roadmap) and the release notes before upgrading.
 
@@ -22,17 +22,19 @@ jobs:
   antd-a11y:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: cstayyab/antd-a11y-action@v0
         id: a11y
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
         if: always() && steps.a11y.outputs.sarif-file != ''
         with:
           sarif_file: ${{ steps.a11y.outputs.sarif-file }}
           category: antd-a11y
 ```
 
-Nothing to install: the action ships its own parser and rules and ignores your ESLint config. It reads `.js`, `.jsx`, `.ts` and `.tsx` files.
+Nothing to install: the action ships its own parser and rules and ignores your ESLint config, so your lint setup can't weaken it. It reads `.js`, `.jsx`, `.ts` and `.tsx` files.
+
+**Check before you push:** add [`eslint-plugin-antd-a11y`](#run-it-locally-with-eslint) to your ESLint config. It runs the same static check in your editor and in pre-push hooks, and `eslint` fails exactly when the PR check would.
 
 **Supports antd 5 and 6.** The rules behave the same on both, and CI checks every rule against the rendered DOM of each major.
 
@@ -225,8 +227,8 @@ The static rules read your source. The runtime check starts the app and looks at
       pull-requests: write
       security-events: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - uses: cstayyab/antd-a11y-action/runtime@v0
@@ -239,7 +241,7 @@ The static rules read your source. The runtime check starts the app and looks at
           exclude-routes: |
             ^/admin
           interactions: .github/a11y-interactions.mjs
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
         if: always() && steps.runtime.outputs.sarif-file != ''
         with:
           sarif_file: ${{ steps.runtime.outputs.sarif-file }}
