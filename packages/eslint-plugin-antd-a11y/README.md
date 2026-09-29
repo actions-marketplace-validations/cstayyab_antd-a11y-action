@@ -84,6 +84,6 @@ export default [
 
 With `antdA11y.config()`, put aliases in the config file instead. See [Wrapper components](https://github.com/cstayyab/antd-a11y-action#wrapper-components) for `name`, `props`, `satisfies`, `only` and `except`.
 
-See the [rule list and docs](https://github.com/cstayyab/antd-a11y-action#what-it-catches).
+See the [rule list and docs](https://github.com/cstayyab/antd-a11y-action#what-it-catches), and [Why axe and jsx-a11y miss Ant Design accessibility bugs](https://dev.to/cstayyab/why-axe-and-jsx-a11y-miss-ant-design-accessibility-bugs-and-a-github-action-that-catches-them-cn0) for the background.
 
 Not affiliated with or endorsed by Ant Group or the Ant Design team.
